@@ -1,12 +1,13 @@
 from extraction_method import*
 
-
 def extract_database(input_path, method):
     features = []
     if args['method'] == 'SIFT':
         sift =  cv2.xfeatures2d.SIFT_create()
         for img_name in os.listdir(input_path):
             img_path = os.path.join(input_path,img_name)
+            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
+            img_name, method, img_path))
             img = cv2.imread(img_path)
             keypoints, des = extract_sift(img, sift)
             feature = des
@@ -15,6 +16,8 @@ def extract_database(input_path, method):
         for img_name in os.listdir(input_path):
             img_path = os.path.join(input_path,img_name)
             img = cv2.imread(img_path)
+            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
+            img_name, method, img_path))
             fd, hog_image = extract_hog(img)
             feature = fd
             features.append(feature)
@@ -22,6 +25,8 @@ def extract_database(input_path, method):
         surf = cv2.xfeatures2d.SURF_create()
         for img_name in os.listdir(input_path):
             img_path = os.path.join(input_path,img_name)
+            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
+            img_name, method, img_path))
             img = cv2.imread(img_path)
             keypoints, des = extract_surf(img, surf)
             feature = des
@@ -33,6 +38,8 @@ def extract_database(input_path, method):
         print('input path', input_path)
         for img_name in os.listdir(input_path):
             img_path = os.path.join(input_path,img_name)
+            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
+            img_name, method, img_path))
             img = cv2.imread(img_path)
             feature = feature = extract_vgg16(img, model)
             features.append(feature)
@@ -46,6 +53,7 @@ def save_feature(features, output_path):
 def main(args):
 
     # extract feature
+    print("[INFO] Extracting  {} feature for dataset".format(args["method"]))
     features = extract_database(args['input_folder'], args['method'])
     print('len features',features.shape)
     # save feature 
