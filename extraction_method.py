@@ -19,21 +19,20 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 
-def extract_sift(img):
+def extract_sift(img, sift):
     gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    sift = cv2.xfeatures2d.SIFT_create()
+    # sift = cv2.xfeatures2d.SIFT_create()
     keypoints, descriptors = sift.detectAndCompute(gray, None)
     return keypoints, descriptors
 
 def extract_hog(img):
     resized_img = cv2.resize(img, (128, 128))
-    cv2_imshow(resized_img)
     fd, hog_image = hog(resized_img, orientations=9, pixels_per_cell=(8, 8), 
                         cells_per_block=(2, 2), visualize=True, multichannel=True)
     return fd, hog_image
 
-def extract_surf(img):
-    surf = cv2.xfeatures2d.SURF_create()
+def extract_surf(img, surf):
+    # surf = cv2.xfeatures2d.SURF_create()
     gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     keypoints, descriptors = surf.detectAndCompute(img,None)
     return keypoints, descriptors 
@@ -47,27 +46,39 @@ def extract_vgg16(img, model):
     vgg16_feature = model.predict(img_data)
 
     return vgg16_feature
+
+def color(img):
+  pass 
+
+def deep(img, model):
+  pass
     
 
 def main(args):
     img = cv2.imread(args['input_path'])
 
-    if args['method'] == 'sift':
-        keypoints, des = extract_sift(img)
-        print('Shape of decriptors: ', des.shape)
-    elif args['method'] == 'hog':
-        pass
-    elif args['method'] == 'surf':
-        pass
-    elif args['method'] == 'vgg16':
+    if args['method'] == 'SIFT':
+        sift =  cv2.xfeatures2d.SIFT_create()
+        keypoints, des = extract_sift(img, sift)
+        feature = des
+    elif args['method'] == 'HOG':
+        fd, hog_image = extract_hog(img)
+        feature = fd
+    elif args['method'] == 'SURF':
+        surf = cv2.xfeatures2d.SURF_create()
+        keypoints, des = extract_surf(img, surf)
+        feature = des
+    elif args['method'] == 'VGG16':
         model = VGG16(weights='imagenet', include_top=True)
         model.summary()
+        feature = extract_vgg16(img, model)
+    print('Shape {} feature: {}'.format(args['method'],feature.shape))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Methods extract image.")
     parser.add_argument('-i', '--input_path',  required=True,
                         help="The path of the input image.")
-    parser.add_argument('-m', '--method', default="sift",
+    parser.add_argument('-m', '--method', default="SIFT",
                         help="Method to extrac feature. We can choose such as: sift, hog, vgg16....")
     # End default optional arguments
 
@@ -76,7 +87,9 @@ if __name__ == "__main__":
     # Print info arguments
     print("Extract feature from image.".upper().center(100))
     print(str("-"*63).center(100))
-    print("|{:<30}|{:<30}|".format("Image path", args['input_path']).center(100))
+    print("|{:<30}:\n|{:<30}|".format("Image path", args['input_path']).center(100))
+    print("|{:<30}|{:<30}|".format("Method", args['method']).center(100))
+
     print(str("-"*63).center(100))
 
     main(args)
