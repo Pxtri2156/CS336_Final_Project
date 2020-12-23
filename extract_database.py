@@ -1,12 +1,13 @@
 from extraction_method import*
 import numpy as np
+from tqdm import tqdm
 
 def extract_database(input_path, method):
-    features = []
-    path_list = []
+    features = [] # save feature
+    path_list = [] # save path of each image
     if args['method'] == 'SIFT':
         sift =  cv2.xfeatures2d.SIFT_create()
-        for img_name in os.listdir(input_path):
+        for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
             img_name, method, img_path))
@@ -16,7 +17,7 @@ def extract_database(input_path, method):
             features.append(feature)
             path_list.append(img_path)
     elif args['method'] == 'HOG':
-        for img_name in os.listdir(input_path):
+        for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             img = cv2.imread(img_path)
             print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
@@ -27,7 +28,7 @@ def extract_database(input_path, method):
             path_list.append(img_path)
     elif args['method'] == 'SURF':
         surf = cv2.xfeatures2d.SURF_create()
-        for img_name in os.listdir(input_path):
+        for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
             img_name, method, img_path))
@@ -42,7 +43,7 @@ def extract_database(input_path, method):
         model = VGG16(weights='imagenet', include_top=True)
         model.summary()
         print('input path', input_path)
-        for img_name in os.listdir(input_path):
+        for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
             img_name, method, img_path))
@@ -52,6 +53,7 @@ def extract_database(input_path, method):
             path_list.append(img_path)
     else:
         print("Nhập lại cho đúng đi !!!")
+
     return np.array(features), path_list
         
 def save_feature(features, path_list, output_path, method):
@@ -66,6 +68,8 @@ def main(args):
     features, path_list = extract_database(args['input_folder'], args['method'])
     print('len features',features.shape)
     # save feature 
+
+    print("[INFO]: Begin save feature")
     save_feature(features,path_list,  args['output_folder'], args['method'])
     print("[INFO]: Saved feature")
 
