@@ -1,18 +1,22 @@
 import numpy as np
 import argparse
+from scipy import spatial
 '''
 X.shape = (1,m)
 Y.shape = (n,m)
 '''
 
 def cosine(X, Y):
-    pass
+    cosine_dist = 1 - np.apply_along_axis(spatial.distance.cosine, 1, Y, X)
+    return cosine_dist
 
-def euclid(X,Y):
-    pass
+def euclidean(X,Y):
+    euclidean_dist = np.apply_along_axis(spatial.distance.euclidean, 1, Y, X)
+    return euclidean_dist
 
-def mahatan(X,Y):
-    pass
+def manhatan(X,Y):
+    mahatan_dist = np.apply_along_axis(spatial.distance.cityblock, 1, Y, X)
+    return mahatan_dist
 
 def norm2(X,Y):
     sub_dist = X - Y
@@ -20,22 +24,25 @@ def norm2(X,Y):
     return norm2_dist
 
 def main(args):
-    X = np.random.randint(255, size=(1, 1000))
-    Y = np.random.randint(255, size=(232, 1000))
+    X = np.random.randint(255, size=(1, 5))
+    print('Vector X: ', X)
+    Y = np.random.randint(255, size=(232, 5))
+    print('Vector Y: ', Y)
+
 
     if args['method'] == 'norm2':
-        dis = norm2(X,Y)
+        dist = norm2(X,Y)
     elif args['method'] == 'cosine':
-        pass
-    elif args['method'] == 'euclid':
-        pass
-    elif args['method'] == 'mahatan':
-        pass
+        dist = cosine(X,Y)
+    elif args['method'] == 'euclidean':
+        dist = euclidean(X,Y)
+    elif args['method'] == 'manhatan':
+        dist = manhatan(X,Y)
     else:
-      print("Wrong method. Please enter similarity measure again")
+      print("Wrong method. Please enter similarity measure again!!")
 
-    print(" Number distance X and matrix Y: ", dis.shape)
-    print("Distance between vector X and matrix Y: ", dis)
+    print(" Number distance X and matrix Y: ", dist.shape)
+    print("Distance between vector X and matrix Y: ", dist)
 
 if __name__ == "__main__":
 
