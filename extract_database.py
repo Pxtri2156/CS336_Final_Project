@@ -2,9 +2,8 @@ import numpy as np
 from tqdm import tqdm
 
 from extraction_method import*
-from config import SIZE_PROJECTION
+from config import SIZE_PROJECTION, RANDOM_SEED
 from util import signature_bit
-
 
 def extract_database(input_path, method, LSH):
     features = [] # save feature
@@ -61,29 +60,36 @@ def extract_database(input_path, method, LSH):
        print("[ERROR]:Wrong method,  Pleas enter extract method again!!!")
     
     features = np.array(features)
-    if args['LSH'] == True:
+    projections = None 
+    if LSH == True:
+      print('active LSH')
+      projections = np.random.randn(SIZE_PROJECTION,features.shape[1])
       features = np.apply_along_axis(signature_bit,1,features,projections)
+      features = features.reshape(-1, 1)
 
-    return features, path_list
+    return features, path_list, projections
         
-def save_feature(features, path_list, output_path, method, LSH, k = SIZE_PROJECTION ):
+def save_feature(features, path_list, output_path, method, LSH, k = SIZE_PROJECTION, projections = None ):
   name_save_file = method + ".npz"
   if LSH == True:
-    name_save_file = str(k) + '_LSH_' + name_save_file 
-
+    print('active LSH')
+    name_save_file = str(k) + '_LSH_' + name_save_file   
   save_path = os.path.join(output_path, name_save_file)
-  np.savez_compressed(save_path, features=features, paths = path_list)
+  np.savez_compressed(save_path, features=features, paths = path_list, projections=projections)
+ 
 
 def main(args):
 
+    np.random.seed(RANDOM_SEED)
+
     # extract feature
     print("[INFO] Extracting  {} feature for dataset".format(args["method"]))
-    features, path_list = extract_database(args['input_folder'], args['method'], args['LSH'])
+    features, path_list, projections = extract_database(args['input_folder'], args['method'], args['LSH'])
     print('len features',features.shape)
     # save feature 
 
     print("[INFO]: Begin save feature")
-    save_feature(features,path_list,  args['output_folder'], args['method'], args['LSH'],SIZE_PROJECTION)
+    save_feature(features,path_list,  args['output_folder'], args['method'], args['LSH'],SIZE_PROJECTION, projections)
     print("[INFO]: Saved feature")
 
 
@@ -95,8 +101,8 @@ if __name__ == "__main__":
                         help="The path of the output feature folder")
     parser.add_argument('-m', '--method', default="SIFT",
                         help="Method to extrac feature. We can choose such as: sift, hog, vgg16....")
-    parser.add_argument('-lsh', '--LSH', default=False,
-                        help="Use Locality-Sensitive Hasing ")
+    parser.add_argument('-lsh', '--LSH', type = int, default = 0,
+                        help="Use Locality-Sensitive Hasing " )
     # End default optional arguments
 
     args = vars(parser.parse_args())
