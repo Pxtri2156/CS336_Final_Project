@@ -18,6 +18,8 @@ from PIL import ImageFile
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
+from config import MAX_DESCRIPTOR
+
 
 def extract_sift(img, sift):
     gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
