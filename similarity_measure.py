@@ -39,7 +39,7 @@ def main(args):
     elif args['method'] == 'manhatan':
         dist = manhatan(X,Y)
     else:
-      print("Wrong method. Please enter similarity measure again!!")
+      print("[ERROR]:Wrong method. Pleas enter similarity measure again!!!")
 
     print(" Number distance X and matrix Y: ", dist.shape)
     print("Distance between vector X and matrix Y: ", dist)
