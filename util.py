@@ -1,3 +1,4 @@
+import numpy as np
 
 def signature_bit(data, projections):
   """
