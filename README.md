@@ -19,41 +19,41 @@ This file give me feature method to extract feature from image: SIFT, HOG, SURF,
 
 ## Exactract feature for storage
 '''
-python extract_database.py \\
---input_folder <input_path> \\
---output_folder  <out_path> \\
---method <feature_method> \\
---LSH 1
+python extract_database.py \\  
+--input_folder <input_path> \\  
+--output_folder  <out_path> \\  
+--method <feature_method> \\  
+--LSH 1  
 '''
 **Example**: 
 '''
-python extract_database.py \\
---input_folder "/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/train" \\
---output_folder "/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/feature" \\
---method "HOG" \\
---LSH 1
+python extract_database.py \\  
+--input_folder "/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/train" \\  
+--output_folder "/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/feature" \\  
+--method "HOG" \\  
+--LSH 1  
 '''
 ## Query image
 
-!python main.py \\
---option="query" \\
---input_path=<input_path> \\
---output_path= <out_path> \\
---feature_path= <fearure_path_saved> \\
---feature_method=<extract feature method>\\
---similarity_measure=<compute_similarity_measure> \\
---LSH=1
+!python main.py \\  
+--option="query" \\  
+--input_path=<input_path> \\  
+--output_path= <out_path> \\  
+--feature_path= <fearure_path_saved> \\  
+--feature_method=<extract feature method>\\  
+--similarity_measure=<compute_similarity_measure> \\  
+--LSH=1  
 
 **Example**:  
 '''
-!python main.py \\
---option="query" \\
---input_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/test"  \\
---output_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/valid" \\
---feature_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/feature" \\
---feature_method="HOG" \\
---similarity_measure="cosine" \\
---LSH=1
+!python main.py \\  
+--option="query" \\  
+--input_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/test"  \\  
+--output_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/data/valid" \\  
+--feature_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/feature" \\  
+--feature_method="HOG" \\  
+--similarity_measure="cosine" \\  
+--LSH=1  
 '''
 
 
