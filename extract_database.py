@@ -3,9 +3,10 @@ from tqdm import tqdm
 
 from extraction_method import*
 from config import SIZE_PROJECTION
+from util import signature_bit
 
 
-def extract_database(input_path, method):
+def extract_database(input_path, method, LSH):
     features = [] # save feature
     path_list = [] # save path of each image
     if args['method'] == 'SIFT':
@@ -54,10 +55,16 @@ def extract_database(input_path, method):
             feature = feature = extract_vgg16(img, model)
             features.append(feature)
             path_list.append(img_path)
+    elif args['method'] == "facenet":
+        pass 
     else:
        print("[ERROR]:Wrong method,  Pleas enter extract method again!!!")
+    
+    features = np.array(features)
+    if args['LSH'] == True:
+      features = np.apply_along_axis(signature_bit,1,features,projections)
 
-    return np.array(features), path_list
+    return features, path_list
         
 def save_feature(features, path_list, output_path, method, LSH, k = SIZE_PROJECTION ):
   name_save_file = method + ".npz"
@@ -71,7 +78,7 @@ def main(args):
 
     # extract feature
     print("[INFO] Extracting  {} feature for dataset".format(args["method"]))
-    features, path_list = extract_database(args['input_folder'], args['method'])
+    features, path_list = extract_database(args['input_folder'], args['method'], args['LSH'])
     print('len features',features.shape)
     # save feature 
 
