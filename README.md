@@ -6,7 +6,7 @@ This is final project of information retrieval
  --- | --- | ---
 Phạm Xuân Trí | 18521530@gm.uit.edu.vn| [Pxtri2156](https://github.com/Pxtri2156)
 Nguyễn Vương Thịnh | 18520367@gm.uit.edu.vn| [ducvuuit]()
-Lưu Hoàng Sơn | 18521348@gm.uit.edu.vn| [ThinhNguyen209]https://github.com/ThinhNguyen209)
+Lưu Hoàng Sơn | 18521348@gm.uit.edu.vn| [ThinhNguyen209](https://github.com/ThinhNguyen209)
 # Architecture code
 ## main.py
 If you want to retrieval or eval, you will run this file
