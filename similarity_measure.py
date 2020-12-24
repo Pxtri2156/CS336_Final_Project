@@ -1,6 +1,9 @@
 import numpy as np
 import argparse
 from scipy import spatial
+
+from config import SIZE_PROJECTION
+from util import signature_bit
 '''
 X.shape = (1,m)
 Y.shape = (n,m)
@@ -23,6 +26,27 @@ def norm2(X,Y):
     norm2_dist = np.linalg.norm(sub_dist, axis = 1)
     return norm2_dist
 
+# Compute IOU with hash 
+
+def bitcount(n):
+	"""
+	gets the number of bits set to 1
+	"""
+	count = 0
+	while n:
+		count += 1
+		n = n & (n-1)
+	return count
+
+def compute_IOU(sig1, sig2, projections_size):
+  sig1 = sig1[0]
+  sig2 = sig2[0]
+  return 1 - bitcount(sig1^sig2)/projections_size
+
+def hash_IOU(X,Y, projections_size):
+  IOU_dist = np.apply_along_axis(compute_IOU, 1,Y,[X]  ,projections_size)
+  return IOU_dist
+
 def main(args):
     X = np.random.randint(255, size=(1, 5))
     print('Vector X: ', X)
@@ -38,6 +62,8 @@ def main(args):
         dist = euclidean(X,Y)
     elif args['method'] == 'manhatan':
         dist = manhatan(X,Y)
+    elif args['method'] == 'lsh_IOU':
+        dist = hash_IOU(X,Y, SIZE_PROJECTION)
     else:
       print("[ERROR]:Wrong method. Pleas enter similarity measure again!!!")
 
