@@ -12,8 +12,8 @@ def extract_database(input_path, method, LSH):
         sift =  cv2.xfeatures2d.SIFT_create()
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
-            img_name, method, img_path))
+            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            img_name, method,LSH, img_path))
             img = cv2.imread(img_path)
             keypoints, des = extract_sift(img, sift)
             feature = des
@@ -23,8 +23,8 @@ def extract_database(input_path, method, LSH):
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             img = cv2.imread(img_path)
-            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
-            img_name, method, img_path))
+            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            img_name, method,LSH, img_path))
             fd, hog_image = extract_hog(img)
             feature = fd
             features.append(feature)
@@ -33,8 +33,8 @@ def extract_database(input_path, method, LSH):
         surf = cv2.xfeatures2d.SURF_create()
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
-            img_name, method, img_path))
+            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            img_name, method,LSH, img_path))
             img = cv2.imread(img_path)
             keypoints, des = extract_surf(img, surf)
             feature = des
@@ -48,8 +48,8 @@ def extract_database(input_path, method, LSH):
         print('input path', input_path)
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {} \npath_img: {}".format( \
-            img_name, method, img_path))
+            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            img_name, method,LSH, img_path))
             img = cv2.imread(img_path)
             feature = feature = extract_vgg16(img, model)
             features.append(feature)

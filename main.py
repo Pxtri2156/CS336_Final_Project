@@ -23,10 +23,8 @@ def compute_similarity(X, Y, method):
       print("[ERROR]:Wrong method. Pleas enter similarity measure again!!!")
 
     return dist
-def retrieval_image(feature_method, similarity_method, input_path, features_storage, projections = None ):
-    LSH = False
-    if projections.any != None:
-      LSH = True
+def retrieval_image(feature_method, similarity_method, input_path, features_storage,LSH,projections = None ):
+
     # Compute feature for all query 
     querys_features = []
     if feature_method == 'SIFT':
@@ -78,7 +76,7 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     # Compute similarity 
     ranks = []
     score = []
-    if LSH == True:
+    if LSH == 1:
       if similarity_method != 'lsh_IOU':
         print("[ERROR]: With activate LSH, you must choose similarty measure is lsh_IOU")
         return None
@@ -126,7 +124,7 @@ def main(args):
     # Start query
     print("[STATUS]:================Retrieving with query images ==================")
     ranks = retrieval_image(args["feature_method"], args["similarity_measure"], \
-    input_path, features_storage, projections )
+    input_path, features_storage,args["LSH"] , projections )
 
     # Show result
     print("Ranks: ", ranks)
