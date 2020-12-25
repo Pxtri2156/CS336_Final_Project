@@ -9,3 +9,8 @@ MAX_DESCRIPTOR = 128
 # Random seed for extract database
 
 RANDOM_SEED = 18521530
+
+
+# Number result 
+
+NUM_RESULT = 20
