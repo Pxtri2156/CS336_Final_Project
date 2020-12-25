@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from similarity_measure import*
 from extraction_method import *
-from config import SIZE_PROJECTION, RANDOM_SEED
+from config import SIZE_PROJECTION, RANDOM_SEED, NUM_RESULT
 
 def compute_similarity(X, Y, method):
 
@@ -87,13 +87,12 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     print("[STATUS]:================Compute similarity==================")      
     for query in querys_features:
         print("[INFO]: Computing")
-        print("Shape query", query)
         print("shape feature storage: ", features_storage.shape )
         dist = compute_similarity(query, features_storage, similarity_method )
         score.append(dist)
         rank = np.argsort(dist)
         ranks.append(rank)
-    return ranks
+    return ranks, score
 
 
 def main(args):
@@ -123,11 +122,14 @@ def main(args):
     
     # Start query
     print("[STATUS]:================Retrieving with query images ==================")
-    ranks = retrieval_image(args["feature_method"], args["similarity_measure"], \
+    ranks, score = retrieval_image(args["feature_method"], args["similarity_measure"], \
     input_path, features_storage,args["LSH"] , projections )
 
     # Show result
-    print("Ranks: ", ranks)
+    if ranks == None:
+        print("No result. Maybe, you run error some where !")
+    else:
+        print("Ranks: ", ranks[:NUM_RESULT])
     print("[STATUS]:================Show result ==================")
 
     if args["option"] == "query":

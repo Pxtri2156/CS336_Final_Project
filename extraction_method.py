@@ -47,7 +47,7 @@ def extract_vgg16(img, model):
 
     vgg16_feature = model.predict(img_data)
 
-    return vgg16_feature
+    return vgg16_feature.flatten()
 
 def color(img):
   pass 
