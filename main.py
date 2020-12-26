@@ -73,7 +73,7 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     
     # Compute similarity 
     ranks = []
-    score = []
+    scores = []
     if LSH == 1:
       if similarity_method != 'lsh_IOU':
         print("[ERROR]: With activate LSH, you must choose similarty measure is lsh_IOU")
@@ -86,11 +86,19 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     for query in querys_features:
         print("[INFO]: Computing")
         print("shape feature storage: ", features_storage.shape )
-        dist = compute_similarity(query, features_storage, similarity_method )
-        score.append(dist)
-        rank = np.argsort(dist)
+        dist = compute_similarity(query, features_storage, similarity_method ) 
+        print('Shape dist: ', dist.shape)
+        if similarity_method != 'cosine':
+          score = np.sort(dist)
+          rank = np.argsort(dist)
+        else: 
+          score = np.sort(dist)[::-1]
+          rank = np.argsort(dist)[::-1]
         ranks.append(rank)
-    return ranks, score
+        scores.append(score)
+        print("Top 10 score: ", score[:10])
+        print("Top 10 rank: ", rank[:10])
+    return ranks, scores
 
 
 def save_result(rank,path_storage, score, save_file):
