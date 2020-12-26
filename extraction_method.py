@@ -49,8 +49,15 @@ def extract_vgg16(img, model):
 
     return vgg16_feature.flatten()
 
-def color(img):
-  pass 
+def extrac_histogram(img):
+  img = cv2.resize(img, (128,128))
+  HSV_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
+  histogram_H = cv2.calcHist([HSV_img], [0], None, [256], [0 , 255])
+  histogram_S = cv2.calcHist([HSV_img], [1], None, [256], [0 , 255])
+  histogram_V = cv2.calcHist([HSV_img], [2], None, [256], [0 , 255])
+  histogram = np.concatenate((histogram_H,histogram_S,histogram_V), 1)
+
+  return histogram.flatten()
 
 def deep(img, model):
   pass
@@ -74,6 +81,9 @@ def main(args):
         model = VGG16(weights='imagenet', include_top=True)
         model.summary()
         feature = extract_vgg16(img, model)
+
+    elif args['method'] == 'COLOR': # color use
+        feature = extrac_histogram(img)
     print('Shape {} feature: {}'.format(args['method'],feature.shape))
 
 if __name__ == "__main__":
