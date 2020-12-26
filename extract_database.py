@@ -40,7 +40,17 @@ def extract_database(input_path, method, LSH):
             feature = des
             features.append(feature)
             path_list.append(img_path)
-
+            
+    elif args['method'] == 'COLOR':
+        for img_name in tqdm(os.listdir(input_path)):
+            img_path = os.path.join(input_path,img_name)
+            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            img_name, method,LSH, img_path))
+            img = cv2.imread(img_path)
+            his_hsv = extrac_histogram(img)
+            feature = his_hsv
+            features.append(feature)
+            path_list.append(img_path)
         
     elif args['method'] == 'VGG16':
         model = VGG16(weights='imagenet', include_top=True)

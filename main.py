@@ -59,6 +59,16 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
             keypoints, des = extract_surf(img, surf)
             feature = des
             querys_features.append(feature)
+    elif feature_method == 'COLOR':
+        for img_name in tqdm(os.listdir(input_path)):
+            img_path = os.path.join(input_path,img_name)
+            img = cv2.imread(img_path)
+            print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
+            img_name, feature_method, similarity_method, LSH, img_path))
+            hsv_hist = extrac_histogram(img)
+            feature = hsv_hist
+            ## Compute similatiy
+            querys_features.append(feature)
     elif feature_method == 'VGG16':
         model = VGG16(weights='imagenet', include_top=True)
         model.summary()
@@ -69,7 +79,7 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
             img_name, feature_method, similarity_method, LSH, img_path))
             img = cv2.imread(img_path)
             feature = feature = extract_vgg16(img, model)
-            querys_features.append(feature)\
+            querys_features.append(feature)
     
     # Compute similarity 
     ranks = []
