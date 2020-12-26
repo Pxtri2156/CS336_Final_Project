@@ -61,6 +61,10 @@ def extrac_histogram(img):
 
 def deep(img, model):
   pass
+
+def extract_delf(img):
+  # Sơn viết vào đây nhé
+  pass
     
 
 def main(args):
