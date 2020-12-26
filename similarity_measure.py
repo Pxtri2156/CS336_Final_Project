@@ -11,17 +11,18 @@ Y.shape = (n,m)
 
 def cosine(X, Y):
     cosine_dist = 1 - np.apply_along_axis(spatial.distance.cosine, 1, Y, X)
-    return cosine_dist
+    return cosine_dist*100
 
 def euclidean(X,Y):
     euclidean_dist = np.apply_along_axis(spatial.distance.euclidean, 1, Y, X)
     return euclidean_dist
 
 def manhatan(X,Y):
-    mahatan_dist = np.apply_along_axis(spatial.distance.cityblock, 1, Y, X)
+    mahatan_dist =  np.apply_along_axis(spatial.distance.cityblock, 1, Y, X)
     return mahatan_dist
 
 def norm2(X,Y):
+    # Không được sử dụng
     sub_dist = X - Y
     norm2_dist = np.linalg.norm(sub_dist, axis = 1)
     return norm2_dist
