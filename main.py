@@ -59,8 +59,6 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
             keypoints, des = extract_surf(img, surf)
             feature = des
             querys_features.append(feature)
-
-        
     elif feature_method == 'VGG16':
         model = VGG16(weights='imagenet', include_top=True)
         model.summary()
@@ -95,6 +93,10 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     return ranks, score
 
 
+def save_result(rank,path_storage, score, save_file):
+    
+    np.savez_compressed(save_file, ranks = rank, paths = path_storage, scores = score)
+        
 def main(args):
     input_path = args['input_path']
 
@@ -121,17 +123,26 @@ def main(args):
         print("[INFO]: Loaded projections")
     
     # Start query
+
     print("[STATUS]:================Retrieving with query images ==================")
-    ranks, score = retrieval_image(args["feature_method"], args["similarity_measure"], \
+    ranks, scores = retrieval_image(args["feature_method"], args["similarity_measure"], \
     input_path, features_storage,args["LSH"] , projections )
 
     # Show result
     if ranks == None:
         print("No result. Maybe, you run error some where !")
     else:
-        print("Ranks: ", ranks[:NUM_RESULT])
-    print("[STATUS]:================Show result ==================")
-
+        ranks = np.array(ranks)
+        print('Shape ranks: ',ranks.shape)
+        print("Ranks: ", ranks[:, :NUM_RESULT].shape)
+    
+    # Save result
+    print("[STATUS]:================  Wrting result ==================")
+    result_file = str(NUM_RESULT) + "_" +  args["feature_method"] + '_' + args["similarity_measure"] + '_' + str(args["LSH"]) + '.npz'
+    result_path = os.path.join(args["output_path"], result_file)
+    print("Result path: ", result_path)
+    save_result( ranks[:, :NUM_RESULT], path_storage, scores, result_path)
+    print("[INFO]: Saved result file")
     if args["option"] == "query":
         pass
     elif args['option'] == "eval":
@@ -148,7 +159,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-i', '--input_path', default=".\data\eval",
                         help="The input path for query or eval")
-    parser.add_argument('-o', '--output_path', default=".\data\eval",
+    parser.add_argument('-o', '--output_path', default=".\data\result",
                         help="The input path for query or eval")
     parser.add_argument('-fm', '--feature_method', default="SIFT",
                         help="Method to extrac feature. We can choose such as: SIFT, HOG, VGG16, SURF")
