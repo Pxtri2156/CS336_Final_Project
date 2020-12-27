@@ -4,6 +4,8 @@ from tqdm import tqdm
 from extraction_method import*
 from config import SIZE_PROJECTION, RANDOM_SEED
 from util import signature_bit
+from glob import glob
+import json
 
 def extract_database(input_path, method, LSH):
     features = [] # save feature
@@ -66,10 +68,39 @@ def extract_database(input_path, method, LSH):
             path_list.append(img_path)
     elif args['method'] == "facenet":
         pass 
+    elif args['method'] == "DELF":
+      path_list = glob(input_path + "/*")
+      print("path list ", path_list)
+      tf.reset_default_graph()
+      tf.logging.set_verbosity(tf.logging.FATAL)
+
+      m = hub.Module('https://tfhub.dev/google/delf/1')
+
+      # The module operates on a single image at a time, so define a placeholder to
+      # feed an arbitrary image in.
+      image_placeholder = tf.placeholder(
+          tf.float32, shape=(None, None, 3), name='input_image')
+
+      module_inputs = {
+          'image': image_placeholder,
+          'score_threshold': 100.0,
+          'image_scales': [0.25, 0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0],
+          'max_feature_num': 1000,
+      }
+
+      module_outputs = m(module_inputs, as_dict=True)
+      image_tf = image_input_fn(path_list)
+      des_dic = extract_delf(image_tf, path_list, module_outputs, image_placeholder) 
+      path_list = list(des_dic.keys())
+      features = des_dic 
+      print("Key feature: ", features.keys())
+      print("feature: ", type(features))
+
     else:
        print("[ERROR]:Wrong method,  Pleas enter extract method again!!!")
     
-    features = np.array(features)
+    if args['method'] != "DELF":
+        features = np.array(features)
     projections = None 
     if LSH == True:
       print('active LSH')
@@ -80,14 +111,25 @@ def extract_database(input_path, method, LSH):
     return features, path_list, projections
         
 def save_feature(features, path_list, output_path, method, LSH, k = SIZE_PROJECTION, projections = None ):
-  name_save_file = method + ".npz"
-  if LSH == True:
-    print('active LSH')
-    name_save_file = str(k) + '_LSH_' + name_save_file   
-  save_path = os.path.join(output_path, name_save_file)
-  np.savez_compressed(save_path, features=features, paths = path_list, projections=projections)
- 
+    name_save_file = method + ".npz"
+    if LSH == True:
+      print('active LSH')
+      name_save_file = str(k) + '_LSH_' + name_save_file   
+    save_path = os.path.join(output_path, name_save_file)
+    np.savez_compressed(save_path, features=features, paths = path_list, projections=projections)
+  
+def save_dic_DELF(dics, path_list, output_path, method):
+      name_save_file = method + ".json"
+      paths_file = method + ".npz"
 
+      save_path = os.path.join(output_path, name_save_file)
+      paths_path =  os.path.join(output_path, paths_file)
+      
+      save_file = open(save_path, 'w')
+      print("Before save: ", type(dics))
+      json.dump(dics, save_file )
+      np.savez_compressed(paths_path, paths = path_list)
+      
 def main(args):
 
     np.random.seed(RANDOM_SEED)
@@ -95,11 +137,18 @@ def main(args):
     # extract feature
     print("[INFO] Extracting  {} feature for dataset".format(args["method"]))
     features, path_list, projections = extract_database(args['input_folder'], args['method'], args['LSH'])
-    print('len features',features.shape)
+    try:
+        print('len features',features.shape)
+    except: 
+        print("Using DELF, len of dictionary", len(features) )
     # save feature 
 
     print("[INFO]: Begin save feature")
+    # if args['method'] != 'DELF':
     save_feature(features,path_list,  args['output_folder'], args['method'], args['LSH'],SIZE_PROJECTION, projections)
+    # else:
+    #     print('Acitave DELF')
+    #     save_dic_DELF(features, path_list, args['output_folder'],args['method'])
     print("[INFO]: Saved feature")
 
 

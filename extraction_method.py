@@ -18,8 +18,24 @@ from PIL import ImageFile
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-from config import MAX_DESCRIPTOR
+from PIL import Image, ImageOps
+from scipy.spatial import cKDTree
+from skimage.feature import plot_matches
+from skimage.measure import ransac
+from skimage.transform import AffineTransform
+from six import BytesIO
+import tensorflow as tf
+import tensorflow_hub as hub
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+from six.moves.urllib.request import urlopen
 
+import glob
+from itertools import accumulate
+from tensorflow.python.framework import ops
+
+from config import MAX_DESCRIPTOR
+from tqdm import tqdm
 
 def extract_sift(img, sift):
     gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -62,10 +78,24 @@ def extrac_histogram(img):
 def deep(img, model):
   pass
 
-def extract_delf(img):
-  # Sơn viết vào đây nhé
-  pass
-    
+def image_input_fn(image_files):
+    filename_queue = tf.train.string_input_producer(
+        image_files, shuffle=False)
+    reader = tf.WholeFileReader()
+    _, value = reader.read(filename_queue)
+    image_tf = tf.image.decode_jpeg(value, channels=3)
+    return tf.image.convert_image_dtype(image_tf, tf.float32)
+
+def extract_delf(image_tf, path_list, module_outputs, image_placeholder):
+  with tf.train.MonitoredSession() as sess:
+    results_dict = {}  # Stores the locations and their descriptors for each image
+    for image_path in tqdm(path_list) :
+        image = sess.run(image_tf)
+        print('Extracting locations and descriptors from %s' % image_path)
+        results_dict[image_path] = sess.run(
+            [module_outputs['locations'], module_outputs['descriptors']],
+            feed_dict={image_placeholder: image})
+    return results_dict
 
 def main(args):
     img = cv2.imread(args['input_path'])
@@ -88,7 +118,32 @@ def main(args):
 
     elif args['method'] == 'COLOR': # color use
         feature = extrac_histogram(img)
-    print('Shape {} feature: {}'.format(args['method'],feature.shape))
+    elif args['method'] == 'DELF':
+
+        tf.reset_default_graph()
+        tf.logging.set_verbosity(tf.logging.FATAL)
+
+        m = hub.Module('https://tfhub.dev/google/delf/1')
+
+        # The module operates on a single image at a time, so define a placeholder to
+        # feed an arbitrary image in.
+        image_placeholder = tf.placeholder(
+            tf.float32, shape=(None, None, 3), name='input_image')
+
+        module_inputs = {
+            'image': image_placeholder,
+            'score_threshold': 100.0,
+            'image_scales': [0.25, 0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0],
+            'max_feature_num': 1000,
+        }
+
+        module_outputs = m(module_inputs, as_dict=True)
+        image_tf = image_input_fn([args['input_path']])
+        path_list = [args['input_path']]
+        des_dic = extract_delf(image_tf, path_list, module_outputs, image_placeholder)
+        print('Descriptor dictionary: ', des_dic.values())
+    if args['method'] != "DELF":
+      print('Shape {} feature: {}'.format(args['method'],feature.shape))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Methods extract image.")
