@@ -98,23 +98,23 @@
 
 </div>
 
-<div class="img-cont bor">
-    <a class="image" href="#">
+<div class="img-cont">
+    <a href="#">
         <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
-
     </a>
-    <a class="image" href="#">
+    <a href="#">
         <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
-
     </a>
-    <a class="image" href="#">
+    <a href="#">
         <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
-
     </a>
-    <a class="image" href="#">
+    <a href="#">
         <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
-
     </a>
+    <a href="#">
+        <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
+    </a>
+
 
 </div>
 
@@ -146,7 +146,9 @@
         data.append('method',method.value)
         data.append('lsh',lsh.value)
         data.append('similarity',similarity.value)
-        console.log(data.values())
+        for(let val of data.values()){
+            console.log(val)
+        }
 
         fetch('/api/query',{
             method:'POST',
@@ -154,33 +156,46 @@
         })
         .then(res=>res.json())
         .then(res=>{
-            let val = generate_result(res.img[0],res.img[1],res.img[2],res.links[0],res.links[1],res.links[2])
-            document.getElementById('bd').insertAdjacentHTML(val)
+            console.log(res)
+            console.log(res.q_id)
+            let data = res.data.map(q =>{
+              return getEncodedImage(q.img_name,q.film_link)
+            })
+            data.push(getEncodedImage(res.q_id,undefined,true))
+            console.log(data)
+            Promise.all(data).then(data=>{
+              let html = generate_result(data.join(''))
+              console.log(html)
+              document.getElementById('bd').insertAdjacentHTML('beforeend',html)
+            })
+
         })
     })
-    function generate_result(q,im1,im2,im3,link1,link2,link3) {
+
+
+    function generate_result(aTags) {
         return `
         <div class="img-cont bor">
-            <a href="#">
-                <img src="${q}" id="" class="image">
-            </a>
-            <a href="${link1}">
-                <img src="${im1}" id="" class="image">
-            </a>
-            <a href="${link2}">
-                <img src="${im2}" id="" class="image">
-            </a>
-            <a href="${link3}">
-                <img src="${im3}" id="" class="image">
-            </a>
+            ${aTags}
         </div>
         `
     }
-    function getEncodedImage(name,isQ) {
+    function generate_aTag(img,link,isQ){
+      return `
+          <a href="${isQ == undefined ? '#':link}">
+            <img src="${img}" >
+          </a>
+      `
+    }
+    function getEncodedImage(name,link,isQ) {
         if(isQ==undefined){
-            return fetch('/api')
+            return fetch(`/api/image/${name}`)
+            .then(res=>res.json())
+            .then(res=>generate_aTag(`data:image/jpeg;base64,${res.img}`,link||'https://google.com'))
         }else{
-
+            return fetch(`/api/image/q/${name}`)
+            .then(res=>res.json())
+            .then(res=>generate_aTag(`data:image/jpeg;base64,${res.img}`,link,isQ))
         }
 
     }
@@ -200,19 +215,17 @@
     .img-cont {
         display: flex;
         width: 100vw;
-        height: auto;
         justify-content: space-evenly;
         align-items: center;
-        overflow: scroll;
         flex-direction: row;
+        overflow: scroll;
     }
 
-    .image {
-        width: 23%;
-
+    a{
+        margin: 10px;
     }
-    .image > img{
-        width: 100%;
+    img{
+        width: 20vw;
     }
     .title {
         font-size: 100px;

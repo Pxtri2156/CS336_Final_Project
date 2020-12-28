@@ -11,11 +11,24 @@ from argparse import ArgumentParser
 import os
 
 def generate_links(images):
-    data = np.load(app.config['link_path'], allow_pickle=True).tolist()
+    data = np.load(app.config['lp'], allow_pickle=True).tolist()
     links = []
     for img in images:
         # wrong file name so we need prefix /content/content
-        links.append(data['/content/content/storage/{}'.format(img.split('/')[-1])])
+        try:
+          links.append(
+            {
+              'img_name':img,
+              'film_link':data['/content/content/storage/{}'.format(img.split('/')[-1])]
+            }
+            )
+        except KeyError:
+            links.append(
+            {
+              'img_name':img,
+              'film_link':''
+            }
+            )
     return links
 
 
@@ -40,15 +53,15 @@ def save_image(file):
 def query(query_id, method="COLOR", similarity="cosine", lsh=0):
     query_id = str(query_id)
     base = '/content'
-    input_p = os.path.join(base, app.config['UPLOAD_FOLDER'], query_id)
+    input_p = os.path.join(base, app.config['qp'], query_id)
     try:
         os.mkdir("{}_out".format(input_p))
     except FileExistsError:
         print("{}_out is exists".format(input_p))
 
-    feature_path = os.path.join(base, 'drive/MyDrive/Information_Retrieval/perfect_feature_image/', method)
+    feature_path = os.path.join(app.config['fp'], method)
 
-    cmd = """python /content/CS336_Final_Project/main.py \
+    cmd = """python main.py \
     --option=query \
     --input_path={ip} \
     --output_path={ip}_out \
@@ -117,21 +130,22 @@ def api_query():
         file = request.files['query_image']
         if allowed_file(file.filename) and file:
             q_id = save_image(file)
-            # print(q_id)
-            # out = query(q_id, method=method, similarity=similarity, lsh=lsh)
-            # out = tojson(out)
-            # out = list(map(lambda x: x.split('/')[-1], out))
-            # links = generate_links(out)
-        return {"img": [], "links": [], "q_id": q_id}, 200
+            print(q_id)
+            out = query(q_id, method=method, similarity=similarity, lsh=lsh)
+            out = tojson(out)
+            out = list(map(lambda x: x.split('/')[-1], out))
+            data = generate_links(out)
+            print(data)
+        # return {"img": [], "links": [], "q_id": q_id}, 200
 
-        # return {"img": out, "links": links, "q_id": q_id}, 200
+        return {"data":data, "q_id": q_id}, 200
     else:
         return {"message": "No file"}, 200
 
 
 @app.route('/api/image/q/<string:q_id>', methods=['GET'])
 def get_q_image(q_id):
-    fp = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], q_id)
+    fp = os.path.join( app.config['qp'], q_id)
     if os.path.exists(fp):
         img = os.listdir(fp)[0]
         fp = os.path.join(fp, img)
@@ -153,7 +167,7 @@ def get_image(img_name):
 
 
 if __name__ == '__main__':
-    os.system('mkdir -p queries')
+    os.system('mkdir -p /content/queries')
     parser = ArgumentParser()
     parser.add_argument('-ng','--ngrok',default=0)
     parser.add_argument('-fp','--feature_path',default='/content/drive/MyDrive/Information_Retrieval/perfect_feature_image/',help='Path to your feature folder, must be in our format')
@@ -165,7 +179,7 @@ if __name__ == '__main__':
     app.config['fp'] = args['feature_path']
     app.config['lp'] = args['link_path']
     ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg']
-    app.config['qp'] = 'queries'
+    app.config['qp'] = '/content/queries'
     CORS(app)
     if str(args['ngrok']) == '1':
         run_with_ngrok(app)
