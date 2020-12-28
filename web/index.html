@@ -168,6 +168,11 @@
               console.log(html)
               document.getElementById('bd').insertAdjacentHTML('beforeend',html)
             })
+            .catch(err=>{
+              console.log(err)
+              return data
+            })
+
 
         })
     })
