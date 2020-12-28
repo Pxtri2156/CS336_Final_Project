@@ -7,7 +7,7 @@ def show(ranks, paths, scores, replace):
   for i, rank in enumerate(ranks):
     print("Result with query {}".format(i))
     for j, candidate in enumerate(rank):
-      img_path = paths[rank][j]
+      img_path = paths[rank][j]  
       print("Ori path: ", img_path)
       if replace == 1 :
       # postprocess image path 
@@ -25,6 +25,7 @@ def main(args):
   ranks = data['ranks']
   scores = data['scores']
   paths = data['paths']
+  print('shape paths: ', paths.shape)
   replace = args['replace_path']
   show(ranks, paths, scores, replace)
 

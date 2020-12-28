@@ -167,14 +167,21 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
               ])
 
             # Perform geometric verification using RANSAC.
-              _, inliers = ransac(
-                  (locations_query_to_use, locations_data_to_use),
-                  AffineTransform,
-                  min_samples=3,
-                  residual_threshold=20,
-                  max_trials=1000)
-              ##
-              inliers = sum(inliers)
+              try:
+                  _, inliers = ransac(
+                      (locations_query_to_use, locations_data_to_use),
+                      AffineTransform,
+                      min_samples=3,
+                      residual_threshold=20,
+                      max_trials=1000)
+                  inliers = sum(inliers)
+                  ##
+              except: 
+                  inliers = 0
+              # print('inliers: ', inliers)
+              # print('key: ',data )
+             
+              
               score.append(inliers)
               # print('inliners', inliers)
               # print('score, ', score)
