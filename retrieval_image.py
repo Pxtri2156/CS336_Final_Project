@@ -5,115 +5,54 @@ from tqdm import tqdm
 from scipy.spatial import cKDTree
 from skimage.measure import ransac
 
-from similarity_measure import*
-from extraction_method import *
+from similarity_measure.similarity_measure import *
+from extraction.COLOR import COLOR
+from extraction.DELF import DeepDELF
+from extraction.SIFT import SIFT
+from extraction.SURF import SURF
+from extraction.VGG16 import DeepVGG16
+from extraction.HOG import HOG 
+
 from config import SIZE_PROJECTION, RANDOM_SEED, NUM_RESULT, DISTANCE_THRESOLD
 from glob import glob
 
-def compute_similarity(X, Y, method):
 
-    if method == 'norm2':
-        dist = norm2(X,Y)
-    elif method == 'cosine':
-        dist = cosine(X,Y)
-    elif method == 'euclidean':
-        dist = euclidean(X,Y)
-    elif method == 'manhatan':
-        dist = manhatan(X,Y)
-    elif method == 'lsh_IOU':
-        dist = hash_IOU(X,Y, SIZE_PROJECTION)
-    else:
-      print("[ERROR]:Wrong method. Pleas enter similarity measure again!!!")
 
-    return dist
-    
 def retrieval_image(feature_method, similarity_method, input_path, features_storage,LSH,projections = None ):
 
     # Compute feature for all query 
     querys_features = []
-    if feature_method == 'SIFT':
-        sift =  cv2.xfeatures2d.SIFT_create()
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
-            img_name, feature_method, similarity_method, LSH, img_path))
-            img = cv2.imread(img_path)
-            keypoints, des = extract_sift(img, sift)
-            feature = des
-            querys_features.append(feature)
+    extractor = None
+    if feature_method != "DELF":
 
-    elif feature_method == 'HOG':
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            img = cv2.imread(img_path)
-            print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
-            img_name, feature_method, similarity_method, LSH, img_path))
-            fd, hog_image = extract_hog(img)
-            feature = fd
-            ## Compute similatiy
-            querys_features.append(feature)
-            
-    elif feature_method == 'SURF':
-        surf = cv2.xfeatures2d.SURF_create()
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
-            img_name, feature_method, similarity_method, LSH, img_path))
-            img = cv2.imread(img_path)
-            keypoints, des = extract_surf(img, surf)
-            feature = des
-            querys_features.append(feature)
+        if feature_method == 'SIFT':
+            pass
+        elif feature_method == 'HOG':
+            extractor = HOG()
+        elif feature_method == 'SURF':
+            pass
+        elif feature_method == 'COLOR':
+            extractor = COLOR()
+        elif feature_method == 'VGG16':
+            extractor = DeepVGG16()
 
-    elif feature_method == 'COLOR':
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            img = cv2.imread(img_path)
-            print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
-            img_name, feature_method, similarity_method, LSH, img_path))
-            hsv_hist = extrac_histogram(img)
-            feature = hsv_hist
-            ## Compute similatiy
-            querys_features.append(feature)
-
-    elif feature_method == 'VGG16':
-        model = VGG16(weights='imagenet', include_top=True)
-        model.summary()
-        print('input path', input_path)
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
             print("\n[INFO] Processing query: img: {}, f_method: {}, s_method: {}, LSH: {} \nquery_path: {}".format( \
             img_name, feature_method, similarity_method, LSH, img_path))
             img = cv2.imread(img_path)
-            feature = feature = extract_vgg16(img, model)
+            feature = extractor.extract(img)
             querys_features.append(feature)
     
     elif feature_method == "DELF":
-        print('input path', input_path)
 
-        path_list = glob(input_path + "/*")
-        print("path list ", path_list)
-        tf.reset_default_graph()
-        tf.logging.set_verbosity(tf.logging.FATAL)
-
-        m = hub.Module('https://tfhub.dev/google/delf/1')
-
-        # The module operates on a single image at a time, so define a placeholder to
-        # feed an arbitrary image in.
-        image_placeholder = tf.placeholder(
-            tf.float32, shape=(None, None, 3), name='input_image')
-
-        module_inputs = {
-            'image': image_placeholder,
-            'score_threshold': 100.0,
-            'image_scales': [0.25, 0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0],
-            'max_feature_num': 1000,
-        }
-
-        module_outputs = m(module_inputs, as_dict=True)
-        image_tf = image_input_fn(path_list)
-        des_dic = extract_delf(image_tf, path_list, module_outputs, image_placeholder)
-        querys_features = des_dic 
-        
+        extractor = DeepDELF(input_path)
+        des_dic = extractor.extract()
+        path_list = list(des_dic.keys())
+        features = des_dic 
+        print("Key feature: ", features.keys())
+        print("feature: ", type(features))
+          
     
     # Compute similarity 
     ranks = []
@@ -127,11 +66,23 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
       querys_features = np.apply_along_axis(signature_bit,1,querys_features,projections)
     
     print("[STATUS]:================Compute similarity==================") 
-    if feature_method != 'DELF':     
+    if feature_method != 'DELF':
+      measure = None  
+      if  similarity_method == "cosine":
+          measure = Cosine_Measure()
+      elif  similarity_method == "euclidean":
+          measure =  Euclidean_Measure()
+      elif similarity_method == "manhatan":
+          measure = Manhatan_Measure()
+      elif similarity_method == "lsh_IOU":
+          measure = IOU_Measure(SIZE_PROJECTION)
+      else:
+        print('[ERROR]: Wrong similatity measure')
+
       for query in querys_features:
           print("[INFO]: Computing")
           print("shape feature storage: ", features_storage.shape )
-          dist = compute_similarity(query, features_storage, similarity_method ) 
+          dist = measure.compute_similarity(query, features_storage ) 
           print('Shape dist: ', dist.shape)
           if similarity_method != 'cosine':
             score = np.sort(dist)
@@ -151,6 +102,7 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
           query_tree = cKDTree(descriptors_query)
           num_features_query = locations_query.shape[0]
           score = []
+
           for data in features_storage.keys():
 
               locations_data, descriptors_data = features_storage[data]
@@ -192,7 +144,6 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
           rank = np.argsort(np.array(score))[::-1]
       scores.append(score)
       ranks.append(rank)
-
     return ranks, scores
 
 def main():
@@ -200,7 +151,6 @@ def main():
 
 if __name__ == "__main__": 
     pass
-
 
 
 

@@ -1,7 +1,15 @@
+import argparse
 import numpy as np
 from tqdm import tqdm
+import os
+import cv2
 
-from extraction_method import*
+from extraction.COLOR import COLOR
+from extraction.DELF import DeepDELF
+from extraction.SIFT import SIFT
+from extraction.SURF import SURF
+from extraction.VGG16 import DeepVGG16
+from extraction.HOG import HOG 
 from config import SIZE_PROJECTION, RANDOM_SEED
 from util import signature_bit
 from glob import glob
@@ -10,87 +18,35 @@ import json
 def extract_database(input_path, method, LSH):
     features = [] # save feature
     path_list = [] # save path of each image
-    if args['method'] == 'SIFT':
-        sift =  cv2.xfeatures2d.SIFT_create()
+    if method != 'DELF':
+
+        extractor = None
+        if method == "COLOR":
+            extractor = COLOR()
+        elif method == 'HOG':
+            extractor = HOG()
+        elif method == "SIFT":
+            pass
+        elif method == "SURF":
+            pass
+        elif method == "VGG16":
+            extractor = DeepVGG16()
+        elif method == "facenet":
+            pass 
+
         for img_name in tqdm(os.listdir(input_path)):
             img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
+            print("\n[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
             img_name, method,LSH, img_path))
             img = cv2.imread(img_path)
-            keypoints, des = extract_sift(img, sift)
-            feature = des
+            feature = extractor.extract(img)
             features.append(feature)
             path_list.append(img_path)
-    elif args['method'] == 'HOG':
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            img = cv2.imread(img_path)
-            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
-            img_name, method,LSH, img_path))
-            fd, hog_image = extract_hog(img)
-            feature = fd
-            features.append(feature)
-            path_list.append(img_path)
-    elif args['method'] == 'SURF':
-        surf = cv2.xfeatures2d.SURF_create()
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
-            img_name, method,LSH, img_path))
-            img = cv2.imread(img_path)
-            keypoints, des = extract_surf(img, surf)
-            feature = des
-            features.append(feature)
-            path_list.append(img_path)
-            
-    elif args['method'] == 'COLOR':
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
-            img_name, method,LSH, img_path))
-            img = cv2.imread(img_path)
-            his_hsv = extrac_histogram(img)
-            feature = his_hsv
-            features.append(feature)
-            path_list.append(img_path)
-        
-    elif args['method'] == 'VGG16':
-        model = VGG16(weights='imagenet', include_top=True)
-        model.summary()
-        print('input path', input_path)
-        for img_name in tqdm(os.listdir(input_path)):
-            img_path = os.path.join(input_path,img_name)
-            print("[INFO] Processing: img: {} method: {}, use LSH: {} \npath_img: {}".format( \
-            img_name, method,LSH, img_path))
-            img = cv2.imread(img_path)
-            feature = feature = extract_vgg16(img, model)
-            features.append(feature)
-            path_list.append(img_path)
-    elif args['method'] == "facenet":
-        pass 
+
+        features = np.array(features)
     elif args['method'] == "DELF":
-      path_list = glob(input_path + "/*")
-      print("path list ", path_list)
-      tf.reset_default_graph()
-      tf.logging.set_verbosity(tf.logging.FATAL)
-
-      m = hub.Module('https://tfhub.dev/google/delf/1')
-
-      # The module operates on a single image at a time, so define a placeholder to
-      # feed an arbitrary image in.
-      image_placeholder = tf.placeholder(
-          tf.float32, shape=(None, None, 3), name='input_image')
-
-      module_inputs = {
-          'image': image_placeholder,
-          'score_threshold': 100.0,
-          'image_scales': [0.25, 0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0],
-          'max_feature_num': 1000,
-      }
-
-      module_outputs = m(module_inputs, as_dict=True)
-      image_tf = image_input_fn(path_list)
-      des_dic = extract_delf(image_tf, path_list, module_outputs, image_placeholder) 
+      extractor = DeepDELF(input_path)
+      des_dic = extractor.extract()
       path_list = list(des_dic.keys())
       features = des_dic 
       print("Key feature: ", features.keys())
@@ -98,9 +54,7 @@ def extract_database(input_path, method, LSH):
 
     else:
        print("[ERROR]:Wrong method,  Pleas enter extract method again!!!")
-    
-    if args['method'] != "DELF":
-        features = np.array(features)
+        
     projections = None 
     if LSH == True:
       print('active LSH')
@@ -133,7 +87,6 @@ def save_dic_DELF(dics, path_list, output_path, method):
 def main(args):
 
     np.random.seed(RANDOM_SEED)
-
     # extract feature
     print("[INFO] Extracting  {} feature for dataset".format(args["method"]))
     features, path_list, projections = extract_database(args['input_folder'], args['method'], args['LSH'])
@@ -152,7 +105,8 @@ def main(args):
     print("[INFO]: Saved feature")
 
 
-if __name__ == "__main__":
+def args_parse():
+
     parser = argparse.ArgumentParser(description="Methods extract image.")
     parser.add_argument('-i', '--input_folder',  default=".\data\train",
                         help="The path of the input image folder.")
@@ -164,8 +118,11 @@ if __name__ == "__main__":
                         help="Use Locality-Sensitive Hasing " )
     # End default optional arguments
 
-    args = vars(parser.parse_args())
+    return vars(parser.parse_args())
 
+if __name__ == "__main__":
+    
+    args = args_parse()
     # Print info arguments
     print("Extract feature from image.".upper().center(100))
     print(str("-"*63).center(100))
