@@ -6,25 +6,22 @@ def result2csv(input_path, out_path):
     data = np.load(input_path)
     ranks = data['ranks']
     paths = data['paths']
+    querys_name = data['query_name']
     results = {}
     
-    for i, rank in enumerate(ranks):
+    for i, query in enumerate(querys_name):
+        query_name = query.split("/")[-1]
+        result_file = []
+        for rank in ranks[i]:
+            result_file.append(paths[rank].split("/")[-1])
+        result_file = sample(result_file, 20)
+        results[query_name] = result_file 
 
-        result = []
-        for j, candidate in enumerate(rank):
-          path = paths[rank][j].split("/")[3]
-          result.append(path)
-        # print('result: ', result[:20])
-        result = sample(result,20)
-        results[i] = result
-
-    # print('results: ',results)
-    # print('output: ', out_path)
-    print("out path: ", out_path)
-    print("results: ", type(results))
-    print("len dictionary: ", len(results))
     fl = open(out_path, 'w')
-    json.dump(results, fl)
+    data = json.dumps(results,indent = 4)
+    print('dictionary: ', data)
+
+    json.dump(data, fl)
 
 
 def main(args):
