@@ -32,7 +32,7 @@
         </ul>
     </div>
 </nav>
-<div class="cont bor" style="overflow: scroll">
+<div class="cont" style="overflow: scroll">
     <h1 class="title">ANIME QUERY</h1>
 
     <div class="container overflow-auto" style="margin-top: 50px;">
@@ -99,7 +99,7 @@
 </div>
 
 <div class="img-cont">
-    <a href="#">
+    <a href="#" class="bor">
         <img src="https://tungtang.com.vn/images/td/images/10687.jpg" >
     </a>
     <a href="#">
@@ -161,16 +161,16 @@
             let data = res.data.map(q =>{
               return getEncodedImage(q.img_name,q.film_link)
             })
-            data.push(getEncodedImage(res.q_id,undefined,true))
+            data.unshift(getEncodedImage(res.q_id,undefined,true))
             console.log(data)
             Promise.all(data).then(data=>{
               let html = generate_result(data.join(''))
-              console.log(html)
+              // console.log(html)
               document.getElementById('bd').insertAdjacentHTML('beforeend',html)
             })
             .catch(err=>{
               console.log(err)
-              return data
+              // return data
             })
 
 
@@ -180,14 +180,14 @@
 
     function generate_result(aTags) {
         return `
-        <div class="img-cont bor">
+        <div class="img-cont">
             ${aTags}
         </div>
         `
     }
     function generate_aTag(img,link,isQ){
       return `
-          <a href="${isQ == undefined ? '#':link}">
+          <a href="${isQ == undefined ? link:'#'}" class="${isQ == true?"bor":""}">
             <img src="${img}" >
           </a>
       `
@@ -196,16 +196,25 @@
         if(isQ==undefined){
             return fetch(`/api/image/${name}`)
             .then(res=>res.json())
-            .then(res=>generate_aTag(`data:image/jpeg;base64,${res.img}`,link||'https://google.com'))
+            .then(res=>generate_aTag(`data:image/jpeg;base64,${res.img}`,link ||'https://google.com'))
+            .catch(err=>{
+              return generate_aTag('https://miro.medium.com/max/500/0*wtjW0jJHibXuJZCE.png',link ||'https://google.com')
+
+            })
         }else{
             return fetch(`/api/image/q/${name}`)
             .then(res=>res.json())
             .then(res=>generate_aTag(`data:image/jpeg;base64,${res.img}`,link,isQ))
+            .catch(err=>{
+                            return generate_aTag('https://miro.medium.com/max/500/0*wtjW0jJHibXuJZCE.png',link ||'https://google.com')
+
+            })
         }
 
     }
 </script>
 <style>
+
     .cont {
         display: flex;
         width: 100vw;
@@ -217,21 +226,7 @@
         /* border: solid; */
     }
 
-    .img-cont {
-        display: flex;
-        width: 100vw;
-        justify-content: space-evenly;
-        align-items: center;
-        flex-direction: row;
-        overflow: scroll;
-    }
 
-    a{
-        margin: 10px;
-    }
-    img{
-        width: 20vw;
-    }
     .title {
         font-size: 100px;
         /*margin-bottom: 10%;*/
@@ -239,7 +234,25 @@
     }
 
     .bor {
-        border: 1px solid #ff0000;
+        border: 2px solid #ff0000;
+    }
+    body{
+        width: 100vw;
+        height: 100vh;
+        box-sizing: border-box;
+
+    }
+    .img-cont {
+        width: 100%;
+        display: flex;
+        overflow: scroll;
+    }
+
+    a{
+        margin: 2px;
+    }
+    img{
+        width: 20vw;
     }
 </style>
 

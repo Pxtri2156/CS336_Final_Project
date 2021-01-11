@@ -33,6 +33,7 @@ def main(args):
     data = np.load(feature_path,  allow_pickle=True)
     features_storage = data['features']
     path_storage = data['paths']
+    print("path storage, ", path_storage)
     print('Shape features: ', features_storage.shape)
     # print('The path of img in storages: ', path_storage)
 
@@ -49,7 +50,6 @@ def main(args):
     start = time.time()
     ranks, scores = retrieval_image(args["feature_method"], args["similarity_measure"], \
     input_path, features_storage,args["LSH"] , projections )
-
     end = time.time()
     excuted_time = end - start
 

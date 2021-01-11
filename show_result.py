@@ -4,10 +4,14 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 from google.colab.patches import cv2_imshow
-def show(ranks, paths, scores, replace, img_folder):
+def show(ranks, paths, scores, replace, img_folder, query_name):
   for i, rank in enumerate(ranks):
-    print("Result with query {}".format(i))
+    print("Result with query {}".format(query_name[i]))
+    query_img = cv2.imread(query_name[i])
+    cv2_imshow(query_img)
     for j, candidate in enumerate(rank):
+      score = scores[i][j] 
+      print("Top: {} scores: {}".format(j+1, score))
       img_path = paths[rank][j]  
       print("Ori path: ", img_path)
       if replace == 1 :
@@ -15,20 +19,20 @@ def show(ranks, paths, scores, replace, img_folder):
           img_file = img_path.split("/")[-1]
           img_path = os.path.join(img_folder, img_file)
           print("After replace: ", img_path)
+      
       img = cv2.imread(img_path)
       print(img.shape)
       cv2_imshow(img)
-      score = scores[i][j] 
-      print("Top: {} scores: {}\nImage query: {}".format(j+1, score, img_path))
+      
     
 def main(args):
   data = np.load(args["result_path"])
   ranks = data['ranks']
   scores = data['scores']
   paths = data['paths']
-  print('shape paths: ', paths.shape)
+  query_name = data['query_name']
   replace = args['replace_path']
-  show(ranks, paths, scores, replace, args['image_folder'])
+  show(ranks, paths, scores, replace, args['image_folder'], query_name)
 
 if __name__ == '__main__':
 
