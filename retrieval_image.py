@@ -49,9 +49,9 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
         extractor = DeepDELF(input_path)
         des_dic = extractor.extract()
         path_list = list(des_dic.keys())
-        features = des_dic 
-        print("Key feature: ", features.keys())
-        print("feature: ", type(features))
+        querys_features = des_dic 
+        print("Key feature: ", querys_features.keys())
+        print("feature: ", type(querys_features))
           
     
     # Compute similarity 

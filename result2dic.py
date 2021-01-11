@@ -19,7 +19,7 @@ def result2csv(input_path, out_path):
 
     fl = open(out_path, 'w')
     data = json.dumps(results,indent = 4)
-    print('dictionary: ', data)
+    # print('dictionary: ', data)
 
     json.dump(data, fl)
 

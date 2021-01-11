@@ -6,8 +6,11 @@ from tqdm import tqdm
 from scipy.spatial import cKDTree
 from skimage.measure import ransac
 from retrieval_image import retrieval_image
+from evaluation import compute_mAP
 from config import SIZE_PROJECTION, RANDOM_SEED, NUM_RESULT, DISTANCE_THRESOLD
 from glob import glob
+import time 
+
 
 
 def save_result(rank,path_storage, score, query_name, save_file):
@@ -43,8 +46,12 @@ def main(args):
     # Start query
 
     print("[STATUS]:================Retrieving with query images ==================")
+    start = time.time()
     ranks, scores = retrieval_image(args["feature_method"], args["similarity_measure"], \
     input_path, features_storage,args["LSH"] , projections )
+
+    end = time.time()
+    excuted_time = end - start
 
     # Show result
     if ranks == None:
@@ -60,12 +67,15 @@ def main(args):
     result_path = os.path.join(args["output_path"], result_file)
     print("Result path: ", result_path)
     query_name = glob(args['input_path'] + '/*')
-    save_result( ranks[:, :NUM_RESULT], path_storage, scores,query_name, result_path)
+    final_ranks = ranks[:, :NUM_RESULT]
+    save_result( final_ranks, path_storage, scores,query_name, result_path)
     print("[INFO]: Saved result file")
     if args["option"] == "query":
         pass
     elif args['option'] == "eval":
-        pass
+        mAP = compute_mAP(args['ground_truth'], final_ranks, path_storage, query_name)
+        print("[INFO]: With extractor: {}, similatity_measure: {}, LSH: {}, num_result: {}\nmAP: {} excuted_time: {} ".format(\
+        args['feature_method'], args['similarity_measure'], args['LSH'], NUM_RESULT, mAP, excuted_time ))
     else:
         print("[ERROR]: Pleas enter option again!!!")
 
@@ -89,6 +99,8 @@ def args_parse():
                         help="The feature path of storage")
     parser.add_argument('-lsh', '--LSH', default= 0,
                         help="Use Locality-Sensitive Hasing ", type = int)
+    parser.add_argument('-g', '--ground_truth', default='./ground_truth',
+                        help="The feature path of ground_truth")
 
                       
     # End default optional arguments
