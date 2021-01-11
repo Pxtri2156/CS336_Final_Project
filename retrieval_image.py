@@ -4,6 +4,7 @@ import os
 from tqdm import tqdm
 from scipy.spatial import cKDTree
 from skimage.measure import ransac
+from skimage.transform import AffineTransform
 
 from similarity_measure.similarity_measure import *
 from extraction.COLOR import COLOR
@@ -57,6 +58,8 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
     # Compute similarity 
     ranks = []
     scores = []
+
+    # Check hasing with LSH
     if LSH == 1:
       if similarity_method != 'lsh_IOU':
         print("[ERROR]: With activate LSH, you must choose similarty measure is lsh_IOU")
@@ -98,13 +101,13 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
       features_storage = features_storage[()] # Convert to dictionary 
 
       for query in querys_features.keys():
+          print("Query: ", query)
           locations_query, descriptors_query = querys_features[query]
           query_tree = cKDTree(descriptors_query)
           num_features_query = locations_query.shape[0]
           score = []
-
+          
           for data in features_storage.keys():
-
               locations_data, descriptors_data = features_storage[data]
               num_features_data = locations_data.shape[0] 
               # Find nearest-neighbor matches using a KD tree.         
@@ -138,12 +141,15 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
              
               
               score.append(inliers)
-              # print('inliners', inliers)
-              # print('score, ', score)
-          score =  np.sort(np.array(score))[::-1]
-          rank = np.argsort(np.array(score))[::-1]
-      scores.append(score)
-      ranks.append(rank)
+              # print('Image: {}, score: {}, '.format(data.split("/")[-1],inliers))
+          score_rank =  np.sort(np.array(score))[::-1]
+          id_rank = np.argsort(np.array(score))[::-1]
+          scores.append(score_rank)
+          ranks.append(id_rank)
+    print("Shape scores ", len(scores))
+    print("Shape ranks ", len(ranks))
+    print('scores: ', scores)
+    print("ranks: ", ranks)
     return ranks, scores
 
 def main():
