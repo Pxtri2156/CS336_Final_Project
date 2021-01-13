@@ -71,7 +71,8 @@ def main(args):
     save_result( final_ranks, path_storage, scores,query_name, result_path)
     print("[INFO]: Saved result file")
     if args["option"] == "query":
-        pass
+        print("[INFO]: With extractor: {}, similatity_measure: {}, LSH: {}, num_result: {} \nexcuted_time: {} ".format(\
+        args['feature_method'], args['similarity_measure'], args['LSH'], NUM_RESULT, excuted_time ))
     elif args['option'] == "eval":
         mAP = compute_mAP(args['ground_truth'], final_ranks, path_storage, query_name)
         print("[INFO]: With extractor: {}, similatity_measure: {}, LSH: {}, num_result: {}\nmAP: {} excuted_time: {} ".format(\

@@ -1,12 +1,13 @@
 import numpy as np
 import argparse
 from scipy import spatial
+from sklearn.neighbors import BallTree
 
 import sys
 sys.path.append('./')
 from config import SIZE_PROJECTION
 from util import signature_bit
-
+import math
 
 class Cosine_Measure:
 
@@ -53,6 +54,21 @@ class IOU_Measure:
     def compute_similarity(self, X,Y):
       IOU_dist = np.apply_along_axis(self.compute_IOU, 1,Y,[X])
       return IOU_dist*100
+
+class DistBallTree():
+    def __init__(self, X, leafsize  ):
+        self.tree = BallTree(X, leafsize)
+        self.X = X
+
+    def query(self, Y, distance_upper_bound):
+       
+        dists, indices = self.tree.query(Y, k = 1)
+        # print("Shape distance: ", dists.shape)
+        last_dists = dists[dists[:,0] <= distance_upper_bound ]
+        last_dists = np.where(dists <= distance_upper_bound, math.inf, dists)
+        last_indices = np.where(dists <= distance_upper_bound, self.X.shape[0], indices)
+        return last_dists.flatten(), last_indices.flatten()
+
 
 def main(args):
     X = np.random.randint(255, size=(1, 5))
