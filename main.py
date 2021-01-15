@@ -51,7 +51,8 @@ def main(args):
     ranks, scores = retrieval_image(args["feature_method"], args["similarity_measure"], \
     input_path, features_storage,args["LSH"] , projections )
     end = time.time()
-    excuted_time = end - start
+    #excuted_time = (end - start)
+    excuted_time = (end - start) / len(ranks)
 
     # Show result
     if ranks == None:

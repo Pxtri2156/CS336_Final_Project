@@ -22,20 +22,20 @@ def compute_mAP(ground_truth, ranks, paths, query_name):
       results = []
       for j, candidate in enumerate(rank):
           result = paths[candidate].split("/")[-1]
-          print("result: ", result)
+          # print("result: ", result)
           if result in data[query]:
             results.append("R")
           else:
             results.append("I")
   
-      print("Ground truth of query {}: \n{}".format(query, data[query]))
+      # print("Ground truth of query {}: \n{}".format(query, data[query]))
      
       results = np.array(results)
       total = len( data[query])
       AP = compute_AP(results,total)
-      print("AP of query {} : {}".format(query, AP))
+      # print("AP of query {} : {}".format(query, AP))
       APs.append(AP)
-    mAP = sum(APs) / 500
+    mAP = sum(APs) / ranks.shape[0]
     return mAP
 
 def main(args):
