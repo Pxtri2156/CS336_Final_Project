@@ -162,8 +162,8 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
           ranks.append(id_rank)
     print("Shape scores ", len(scores))
     print("Shape ranks ", len(ranks))
-    print('scores: ', scores)
-    print("ranks: ", ranks)
+    # print('scores: ', scores)
+    # print("ranks: ", ranks)
     return ranks, scores
 
 def main():
