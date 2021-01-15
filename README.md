@@ -5,19 +5,24 @@ This is final project of information retrieval
  Name | Email| Git|
  --- | --- | ---
 Phạm Xuân Trí | 18521530@gm.uit.edu.vn| [Pxtri2156](https://github.com/Pxtri2156)
-Nguyễn Vương Thịnh | 18520367@gm.uit.edu.vn| [ducvuuit]()
-Lưu Hoàng Sơn | 18521348@gm.uit.edu.vn| [ThinhNguyen209](https://github.com/ThinhNguyen209)
+Nguyễn Vương Thịnh | 18520367@gm.uit.edu.vn| [ThinhNguyen209](https://github.com/ThinhNguyen209)
+Lưu Hoàng Sơn | 18521348@gm.uit.edu.vn| []
 # Architecture code
 ## main.py
-If you want to retrieval or eval, you will run this file
-## similarity_mesure.py
-This file give me many similarity measure: Cosine, Euclidean, Manhatan, Norm2
-## feature_method.py
-This file give me feature method to extract feature from image: SIFT, HOG, SURF, VGG16
-## 
+File này cho phép truy vấn một hoặc nhiều ảnh bất kì. Nó cũng là file chạy để đánh giá kết quả truy vấn. 
+## Folder extraction
+Chứa các phương pháp rút trích đặc trưng cho ảnh: HOG, HSV-Histogram, VGG16, SURF, SIFT, DELF
+## Folder similarity_mesure 
+Chứa cái độ đo tương đồng giữa 2 vector: Euclidean, Cosine, Manhatan, IOU
+
 # Usage
 
 ## Exactract feature for storage
+Để rút trích đặc trung cho tập dataset ( tập chúng ta sẽ truy vấn). Chúng ta cần run file **extract_database.py**.  
+Các tham số môi trường khi chạy file bao gồm:
+* input_folder: Đường dẫn của folder chứa ảnh cần rút trích đặc trưng. 
+* output_folder: Thư mục lưu trữ các vector đặc trưng sau khi rút trích các đặc trưng.
+* method: phương 
 '''
 python extract_database.py \\  
 --input_folder <input_path> \\  
