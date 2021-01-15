@@ -10,21 +10,22 @@ This is final project of information retrieval
 
 
 # Architecture code
-## main.py
-File này cho phép truy vấn một hoặc nhiều ảnh bất kì. Nó cũng là file chạy để đánh giá kết quả truy vấn.
+## File main.py
+If you want to query one or more image, you will run this file. And, you can run file to evaluation. 
 ## Folder extraction
-Chứa các phương pháp rút trích đặc trưng cho ảnh: HOG, HSV-Histogram, VGG16, SURF, SIFT, DELF
+Folder of feature extractions for image : *HOG, HSV-Histogram, VGG16, SURF, SIFT, DELF*
 ## Folder similarity_mesure
-Chứa cái độ đo tương đồng giữa 2 vector: Euclidean, Cosine, Manhatan, IOU
+Folder of similarity measures : *Euclidean, Cosine, Manhatan, IOU*
 
 # Usage
 
 ## Exactract feature for storage
-Để rút trích đặc trung cho tập dataset ( tập chúng ta sẽ truy vấn). Chúng ta cần run file **extract_database.py**.  
-Các tham số môi trường khi chạy file bao gồm:
-* input_folder: Đường dẫn của folder chứa ảnh cần rút trích đặc trưng.
-* output_folder: Thư mục lưu trữ các vector đặc trưng sau khi rút trích các đặc trưng.
-* method: phương
+To extract feature for dataset. You must run file **extract_database.py**.  
+Argument:
+* input_folder: The path of folder image that need extract feature.
+* output_folder: The path of folder, where are save feature. 
+* method: method feature extraction that you want to apply.
+* LSH: Assign 1, if you want to activate LSH. 
 
 
 ```sh
@@ -45,7 +46,14 @@ python extract_database.py \\
 
 **NOTE**: If you are using colab, make sure you add '!' before the command.
 ## Query image
-
+To query 1 or more image. You must run file **main.py**  
+Argument: 
+* option: query or eval.
+* input_path: the path folder of query image.
+* output_path: the path will save result query.
+* feature_path: the path of feature dataset. 
+* feature_method: method feature extraction that you want to apply.
+* similarity_measure: method similarity measure that you want to apply.
 ```sh
 python main.py \\  
 --option="query" \\  
@@ -54,7 +62,8 @@ python main.py \\
 --feature_path= <fearure_path_saved> \\  
 --feature_method=<extract feature method>\\  
 --similarity_measure=<compute_similarity_measure> \\  
---LSH=1  
+--LSH=1  \\
+--ground_truth = None 
 ```
 **Example**:  
 ```sh
@@ -65,5 +74,6 @@ python main.py \\
 --feature_path="/content/drive/MyDrive/Information_Retrieval/src/CS336_Final_Project/feature" \\  
 --feature_method="HOG" \\  
 --similarity_measure="cosine" \\  
---LSH=1  
+--LSH=1  \\
+--ground_truth = None 
 ```
