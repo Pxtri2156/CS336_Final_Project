@@ -54,6 +54,7 @@ Argument:
 * feature_path: the path of feature dataset. 
 * feature_method: method feature extraction that you want to apply.
 * similarity_measure: method similarity measure that you want to apply.
+* ground_truth: the path ground_truth. If you want to query, you can't enter this path.
 ```sh
 python main.py \\  
 --option="query" \\  
