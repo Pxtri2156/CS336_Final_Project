@@ -81,12 +81,12 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
           measure = IOU_Measure(SIZE_PROJECTION)
       else:
         print('[ERROR]: Wrong similatity measure')
-
-      for query in querys_features:
-          print("[INFO]: Computing")
-          print("shape feature storage: ", features_storage.shape )
+      
+      print("[INFO]: Computing ......")
+      for query in tqdm(querys_features):
+          # print("shape feature storage: ", features_storage.shape )
           dist = measure.compute_similarity(query, features_storage ) 
-          print('Shape dist: ', dist.shape)
+          # print('Shape dist: ', dist.shape)
           if similarity_method != 'cosine':
             score = np.sort(dist)
             rank = np.argsort(dist)
@@ -95,8 +95,8 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
             rank = np.argsort(dist)[::-1]
           ranks.append(rank)
           scores.append(score)
-          print("Top 10 score: ", score[:10])
-          print("Top 10 rank: ", rank[:10])
+          # print("Top 10 score: ", score[:10])
+          # print("Top 10 rank: ", rank[:10])
     else:
       features_storage = features_storage[()] # Convert to dictionary 
 
