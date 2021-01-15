@@ -101,28 +101,42 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
       features_storage = features_storage[()] # Convert to dictionary 
 
       for query in querys_features.keys():
-          print("Query: ", query)
+          # print("Query: ", query)
           locations_query, descriptors_query = querys_features[query]
-          query_tree = cKDTree(descriptors_query)
+          # print("Descriptor query: ", descriptors_query.shape )
+          if similarity_method == "KDtree":
+              query_tree = cKDTree(descriptors_query, leafsize = 1000 )
+          elif similarity_method == "DistBallTree":
+              query_tree = DistBallTree(descriptors_query, leafsize = 1000 )
           num_features_query = locations_query.shape[0]
           score = []
           
-          for data in features_storage.keys():
+          for data in tqdm(features_storage.keys()):
               locations_data, descriptors_data = features_storage[data]
+              # print("Descriptor data: ", descriptors_data.shape )
               num_features_data = locations_data.shape[0] 
               # Find nearest-neighbor matches using a KD tree.         
               _, indices = query_tree.query(
                   descriptors_data, distance_upper_bound=DISTANCE_THRESOLD)
+              
+              # print("shape indices: ", indices.shape)
+              # print("indices: ", indices )
+              # print("Dist: ", _)
               ##
               locations_data_to_use = np.array([locations_data[i,]
                   for i in range(num_features_data)
                   if indices[i] != num_features_query
               ])
+              # print("Shape locations data: ",locations_data_to_use.shape )
+              # print("locations data: ", locations_data_to_use)
               locations_query_to_use = np.array([
                   locations_query[indices[i],]
                   for i in range(num_features_data)
                   if indices[i] != num_features_query
               ])
+              # print("Shape locations query: ",locations_query_to_use.shape )
+              # print("locations data: ", locations_query_to_use)
+
 
             # Perform geometric verification using RANSAC.
               try:
@@ -136,7 +150,7 @@ def retrieval_image(feature_method, similarity_method, input_path, features_stor
                   ##
               except: 
                   inliers = 0
-              # print('inliers: ', inliers)
+              print('inliers: ', inliers)
               # print('key: ',data )
              
               
